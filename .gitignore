@@ -1,0 +1,64 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+tfplan
+
+# Azure CLI / credenciales locales
+.azure/
+*.pem
+*.pfx
+.env
+.env.local
+*.secret
+
+# Python (si agregas notebooks o scripts)
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Data local (no subir samples reales)
+*.parquet
+*.csv
+*.xlsx
+data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+deploy-*.log
+
+# Borradores temporales
+tmp/
+scratch/
+
+# secrets for live demo
+demo/.secrets/
+demo/scripts_exec/.*token*
+demo/scripts_exec/.*key*
+demo/scripts_exec/cluster_*.json
+
+# Claude Code harness local config
+.claude/

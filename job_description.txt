@@ -1,0 +1,35 @@
+¡Únete a nuestra revolución tecnológica como Data Engineer - Azure Purview Specialist!
+
+En Bluetab, rompemos con la consultoría tradicional porque contratamos para nuestra propia familia. Creemos en nuestra cultura, trabajamos en equipo y valoramos tanto el crecimiento profesional como personal.
+
+💡 ¿Qué te ofrecemos?
+
+-Trabajo híbrido.
+
+-Entornos innovadores con las últimas tendencias tecnológicas.
+
+-Contrato indefinido, salario competitivo y plan de carrera personalizado.
+
+-Beneficios extralegales como bono de alimentación, medicina prepagada, días adicionales a los de ley de acuerdo a la antigüedad, formación continua 🚀
+
+¿Qué buscamos? ¡Pasión por la tecnología y ganas de crecer!
+
+· Formación en ciencias de la computación.
+
+· Experiencia mayor a 3 años como data engineer azure, configuración y monitoreo de políticas de clasificación y etiquetado de datos, conocimiento sobre best practices de gobernanza de datos.
+
+· Experiencia de 1 año con Azure Purview, incluyendo configuración, administración y uso.
+
+· Manejo de: Azure Data Factory, Azure Databricks, Azure SQL Data Warehouse, Data Map, Data Catalog y Data Estate Insights de Purview.
+
+🎯 Queremos conocerte si… 
+
+-Eres Proactivo y autodidacta
+
+-Te encanta el trabajo en equipo, la innovación y excelencia
+
+-Sabes comunicar, liderar con energía y tienes adaptación al cambio.
+
+¿Listo para crecer con nosotros?
+
+"Bluetab" es una empresa del grupo IBM. Bluetab será la entidad contratante. Al proceder con esta solicitud, usted entiende que Bluetab compartirá su información personal con otras filiales de IBM involucradas en su proceso de reclutamiento, selección y contratación, donde quiera que éstas se encuentren. Encontrará más información sobre cómo IBM protege su información personal, incluidas las medidas en caso de transferencia transfronteriza de datos, aquí: https://www.ibm.com/careers/us-en/privacy-policy/".
