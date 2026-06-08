@@ -75,6 +75,98 @@ Ver detalle en [`docs/03_arquitectura.md`](docs/03_arquitectura.md).
 
 ---
 
+## Demo desplegado en Azure (estado real)
+
+El diagrama anterior es el **modelo conceptual** (caso Colmena completo). Lo que está efectivamente desplegado en Azure como demo es un subconjunto: las piezas on-prem y legacy (Sybase, Snowflake, SHIR, Tableau) se modelan como **entidades manuales en Purview vía Atlas API** para que el grafo de lineage se vea end-to-end, sin tener que levantar infraestructura legacy real.
+
+### Recursos físicos en Azure
+
+Resource group `rg-purview-demo` (región brazilsouth):
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ADLS Gen2: stitalodemo16de97                                   │
+│  Containers:  [bronze]  [silver]  [gold]                        │
+│  Contenido: CSVs en bronze, Delta tables en silver/gold,        │
+│  incluye gold/colmena/dq/parity_report                          │
+└──────────────────┬──────────────────────────────────────────────┘
+                   │ lee/escribe Delta
+                   ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Databricks workspace: dbx-italodemo-16de97                     │
+│  Cluster: 0606-045945-hk82wqk5  (Standard_D4ds_v4, single-user) │
+│  3 notebooks corridos SUCCESS:                                  │
+│    nb_bronze_to_silver · nb_silver_to_gold · nb_dq_parity       │
+└──────────────────┬──────────────────────────────────────────────┘
+                   │ scaneado / lineage publicado vía Atlas API
+                   ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Purview: pv-italodemo-16de97                                   │
+│  (estado interno detallado abajo)                               │
+└─────────────────────────────────────────────────────────────────┘
+
++ ADF (adf-italodemo-16de97)         desplegado, no usado en el flujo demo
++ Key Vault (kv-italodemo-16de97)    desplegado, no usado en el flujo demo
+```
+
+### Estado interno de Purview (poblado vía Atlas API)
+
+```
+COLLECTIONS (árbol 4 niveles)
+└── root
+    └── colmena
+        ├── sales
+        ├── underwriting
+        └── claims
+
+CUSTOM CLASSIFICATIONS (LATAM)
+  CL.RUT  ·  CL.POLICY_NUMBER  ·  CL.CLAIM_NUMBER   (threshold 60%)
+
+SOURCES + SCANS
+  adls-italodemo-colmena
+    ├── scan bronze  → Succeeded  (15 discovered / 5 classified)
+    ├── scan silver  → Succeeded
+    └── scan gold    → Succeeded
+
+GLOSSARY: glosario Colmena + 5 términos ES
+
+LINEAGE end-to-end (Atlas API)
+  [Sybase entities manuales] ──► bronze ──► silver ──► gold
+                            └─► [Snowflake entities manuales]   (path legacy)
+  Total: 23 Process edges
+
+TAGS de migración
+  3 assets gold con customAttributes.migration_status=ready
+  emitidos desde nb_dq_parity al pasar el gate de paridad
+```
+
+### Qué NO está desplegado (y por qué)
+
+| Componente conceptual | Estado real | Razón |
+|---|---|---|
+| Sybase on-prem | entidad manual en Purview | el origen on-prem no se replica en una demo |
+| Snowflake DW legacy | entidades manuales en Purview | costo y licenciamiento; el lineage legacy se modela vía Atlas |
+| SHIR (Self-Hosted IR) | no aplica | no hay Sybase real que escanear |
+| Tableau | no aplica | la demo termina en el catálogo (gold + lineage + tags) |
+| ADF pipelines | recurso desplegado, sin pipelines activos | el flujo demo corre desde notebooks Databricks directamente |
+| Key Vault secrets | recurso desplegado, vacío | tokens y keys viven en `demo/.secrets/` local (gitignored) |
+
+### Scripts de ejecución (orden real corrido)
+
+Todos en [`demo/scripts_exec/`](demo/scripts_exec/):
+
+1. `pv_create_collections.py` — árbol 4 niveles
+2. `pv_create_classifications.py` — CL.RUT / CL.POLICY_NUMBER / CL.CLAIM_NUMBER
+3. `pv_register_sources.py` — registra ADLS como source
+4. `pv_create_scans.py` — 3 scans bronze/silver/gold
+5. `pv_manual_entities.py` — 10 entidades Sybase + Snowflake
+6. `pv_create_glossary.py` — glosario + términos ES
+7. `pv_push_lineage_legacy.py` — 5 edges Sybase→Snowflake
+8. `pv_push_lineage_new.py` — 8 DataSets silver/gold + 15 Process edges
+9. `dbx_upload_notebooks.py` + `dbx_run_notebook.py` — corre los 3 notebooks
+
+---
+
 ## Estructura del repo
 
 ```
