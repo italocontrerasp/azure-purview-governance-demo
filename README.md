@@ -81,32 +81,43 @@ El diagrama anterior es el **modelo conceptual** (caso Colmena completo). Lo que
 
 ### Recursos físicos en Azure
 
-Resource group `rg-purview-demo` (región brazilsouth):
+Resource group `rg-purview-demo` (región brazilsouth). Las cajas con borde sólido están **desplegadas en Azure**; las punteadas son **entidades modeladas en Purview vía Atlas API** (no hay infraestructura real detrás).
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ADLS Gen2: stitalodemo16de97                                   │
-│  Containers:  [bronze]  [silver]  [gold]                        │
-│  Contenido: CSVs en bronze, Delta tables en silver/gold,        │
-│  incluye gold/colmena/dq/parity_report                          │
-└──────────────────┬──────────────────────────────────────────────┘
-                   │ lee/escribe Delta
-                   ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Databricks workspace: dbx-italodemo-16de97                     │
-│  Cluster: 0606-045945-hk82wqk5  (Standard_D4ds_v4, single-user) │
-│  3 notebooks corridos SUCCESS:                                  │
-│    nb_bronze_to_silver · nb_silver_to_gold · nb_dq_parity       │
-└──────────────────┬──────────────────────────────────────────────┘
-                   │ scaneado / lineage publicado vía Atlas API
-                   ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Purview: pv-italodemo-16de97                                   │
-│  (estado interno detallado abajo)                               │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph EXT["Modelado en Purview vía Atlas API (sin infraestructura desplegada)"]
+        direction LR
+        SYB["Sybase on-prem<br/>entidades manuales"]
+        SF["Snowflake DW legacy<br/>entidades manuales"]
+    end
 
-+ ADF (adf-italodemo-16de97)         desplegado, no usado en el flujo demo
-+ Key Vault (kv-italodemo-16de97)    desplegado, no usado en el flujo demo
+    subgraph RG["Resource Group: rg-purview-demo (brazilsouth)"]
+        direction TB
+        ADLS[("ADLS Gen2 — stitalodemo16de97<br/>containers: bronze · silver · gold<br/>Delta tables + parity_report")]
+        DBX["Databricks — dbx-italodemo-16de97<br/>cluster 0606-045945-hk82wqk5 (STOPPED)<br/>3 notebooks SUCCESS"]
+        PV["Microsoft Purview — pv-italodemo-16de97<br/>collections · classifications · scans · lineage"]
+        ADF["Azure Data Factory<br/>adf-italodemo-16de97<br/>desplegado · sin pipelines activos"]
+        KV["Key Vault<br/>kv-italodemo-16de97<br/>desplegado · sin secrets activos"]
+    end
+
+    SYB -.->|lineage legacy| SF
+    SYB -.->|lineage manual| PV
+    SF  -.->|lineage manual| PV
+    ADLS -->|read/write Delta| DBX
+    ADLS -->|3 scans Succeeded| PV
+    DBX -->|push lineage Atlas API| PV
+
+    classDef storage    fill:#0078D4,stroke:#003e6e,color:#fff
+    classDef compute    fill:#FF3621,stroke:#7a1a10,color:#fff
+    classDef governance fill:#742774,stroke:#3a143a,color:#fff
+    classDef unused     fill:#bbb,stroke:#666,color:#222,stroke-dasharray:5 5
+    classDef virtual    fill:#fff,stroke:#666,color:#333,stroke-dasharray:3 3
+
+    class ADLS storage
+    class DBX compute
+    class PV governance
+    class ADF,KV unused
+    class SYB,SF virtual
 ```
 
 ### Estado interno de Purview (poblado vía Atlas API)
